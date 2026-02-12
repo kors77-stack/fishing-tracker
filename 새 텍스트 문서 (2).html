@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed & Direction Tracker</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        #display { text-align: center; }
+        .label { font-size: 1.2rem; color: #888; }
+        .value { font-size: 4rem; font-weight: bold; margin: 10px 0; color: #00ff88; }
+        #compass { width: 150px; height: 150px; border: 5px solid #00ff88; border-radius: 50%; position: relative; margin-top: 20px; transition: transform 0.2s; }
+        #needle { width: 4px; height: 70px; background: red; position: absolute; left: 50%; bottom: 50%; transform-origin: bottom center; margin-left: -2px; }
+    </style>
+</head>
+<body>
+
+<div id="display">
+    <div class="label">이동 속도</div>
+    <div id="speed" class="value">0.0</div>
+    <div class="label">km/h</div>
+
+    <hr style="width: 200px; border: 1px solid #333; margin: 30px 0;">
+
+    <div class="label">진행 방향</div>
+    <div id="heading" class="value">0°</div>
+    <div id="compass">
+        <div id="needle"></div>
+    </div>
+</div>
+
+<script>
+    const speedEl = document.getElementById('speed');
+    const headingEl = document.getElementById('heading');
+    const needle = document.getElementById('needle');
+
+    if ('geolocation' in navigator) {
+        navigator.geolocation.watchPosition((position) => {
+            // 1. 속도 계산 (m/s -> km/h)
+            const speedMs = position.coords.speed || 0;
+            const speedKmh = (speedMs * 3.6).toFixed(1);
+            speedEl.innerText = speedKmh;
+
+            // 2. 방향 계산 (0 ~ 360도)
+            const heading = position.coords.heading;
+            if (heading !== null && heading !== undefined) {
+                headingEl.innerText = Math.round(heading) + "°";
+                needle.style.transform = `rotate(${heading}deg)`;
+            } else {
+                headingEl.innerText = "계산 중...";
+            }
+        }, (err) => {
+            alert("GPS 접근 권한이 필요합니다.");
+        }, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
+        });
+    } else {
+        alert("이 브라우저는 GPS를 지원하지 않습니다.");
+    }
+</script>
+</body>
+</html>
